@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adarsh's AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        /* Custom scrollbar for a more polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #202123;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444654;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Style for the blinking cursor in the loading message */
+        .blinking-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background-color: #f0f0f0;
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+        @keyframes blink {
+            from, to { background-color: transparent }
+            50% { background-color: #f0f0f0; }
+        }
+
+        /* Styling for code blocks */
+        .prose pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+        .prose pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .copy-code-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        pre:hover .copy-code-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-[#343541] text-white font-sans">
+
+    <div class="relative min-h-screen md:flex">
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden flex justify-between items-center bg-[#202123] p-2 text-white sticky top-0 z-10">
+            <h1 class="text-lg font-bold ml-12">Adarsh's AI</h1>
+            <button id="hamburgerBtn" class="p-2 focus:outline-none focus:bg-gray-700 rounded-md">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-[#202123] text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-20 flex flex-col">
+            <button id="newChatBtn" class="flex items-center justify-center text-left w-full p-3 rounded-md border border-gray-600 hover:bg-[#343541] transition-colors duration-200 mb-4">
+                <i class="fas fa-plus mr-2"></i> New Chat
+            </button>
+            <div id="chatHistory" class="flex-grow overflow-y-auto">
+                <p class="text-sm text-gray-400 px-2">Chat history coming soon.</p>
+            </div>
+            <div class="border-t border-gray-700 pt-4">
+                 <a href="#" class="flex items-center p-3 rounded-md hover:bg-[#343541] transition-colors duration-200">
+                    <i class="fas fa-user-circle mr-2"></i> User Profile
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 flex flex-col h-screen md:h-auto">
+            <div id="chatbox" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+                <!-- Initial Welcome Message -->
+                <div id="welcomeMessage" class="text-center my-auto flex flex-col justify-center items-center h-full">
+                    <div class="inline-block bg-white text-[#343541] p-4 rounded-full">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.9 4.2-4.3.4 3.3 2.9-.9 4.2 3.8-2.3 3.8 2.3-.9-4.2 3.3-2.9-4.3-.4Z"/></svg>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold mt-4">Adarsh's AI</h1>
+                    <p class="text-md md:text-lg text-gray-300">How can I help you today?</p>
+                </div>
+                <!-- Chat messages will be appended here -->
+            </div>
+
+            <!-- Input Form -->
+            <div class="p-4 bg-[#343541] border-t border-gray-600">
+                <form id="messageForm" class="max-w-3xl mx-auto bg-[#40414f] rounded-xl shadow-lg flex items-center p-2">
+                    <textarea id="messageInput" class="flex-grow bg-transparent text-white p-3 focus:outline-none resize-none" placeholder="Message Adarsh's AI..." rows="1"></textarea>
+                    <button type="submit" id="sendButton" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-3 ml-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div class="text-xs text-center text-gray-400 mt-2">
+                    <p>Made with ❤️ by Adarsh</p>
+                    <p class="text-gray-500 mt-1">This app is in beta and under development.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element Selection ---
+            const chatbox = document.getElementById('chatbox');
+            const messageForm = document.getElementById('messageForm');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const newChatBtn = document.getElementById('newChatBtn');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const sidebar = document.getElementById('sidebar');
+
+            // --- Hardcoded API Key ---
+            const geminiApiKey = 'AIzaSyC89CtCrLLJOx7CC5pmYMopqK9ab1QqtNM';
+            let chatHistory = [];
+
+            // --- Responsive Sidebar Toggle ---
+            hamburgerBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // --- Core Functions ---
+
+            async function callGeminiApi(prompt) {
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+                const payload = { contents: chatHistory };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error:", errorData);
+                        if (errorData.error && errorData.error.message.includes("API key not valid")) {
+                            return "Error: The provided Gemini API key is not valid.";
+                        }
+                        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
+                        const botResponse = result.candidates[0].content.parts[0].text;
+                        chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                        return botResponse;
+                    } else {
+                        console.error("Unexpected API response structure:", result);
+                        if (result.promptFeedback?.blockReason) {
+                             return `Response blocked due to: ${result.promptFeedback.blockReason}.`;
+                        }
+                        return "Sorry, I couldn't get a valid response. Please try again.";
+                    }
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    return `Error: ${error.message}. Please check your network connection.`;
+                }
+            }
+            
+            function addMessageToUI(text, role) {
+                if (welcomeMessage && welcomeMessage.style.display !== 'none') {
+                    welcomeMessage.style.display = 'none';
+                    chatbox.innerHTML = ''; // Clear the welcome message to start the chat
+                }
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = 'max-w-3xl mx-auto flex items-start space-x-4';
+
+                const iconClass = role === 'user' ? 'bg-blue-600' : 'bg-white';
+                const iconContent = role === 'user' 
+                    ? `<div class="w-8 h-8 rounded-full ${iconClass} flex items-center justify-center font-bold text-sm flex-shrink-0">You</div>`
+                    : `<div class="w-8 h-8 rounded-full ${iconClass} flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#343541" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 4.2-4.3.4 3.3 2.9-.9 4.2 3.8-2.3 3.8 2.3-.9-4.2 3.3-2.9-4.3-.4Z"/></svg></div>`;
+                
+                const textContentDiv = document.createElement('div');
+                textContentDiv.className = 'flex-1 whitespace-pre-wrap pt-1 prose text-white max-w-none';
+                
+                if (role === 'bot') {
+                    // Use marked to parse markdown content for bot messages
+                    textContentDiv.innerHTML = marked.parse(text);
+                } else {
+                    // For user messages, just set the text content to prevent any HTML injection
+                    textContentDiv.textContent = text;
+                }
+
+                messageElement.innerHTML = iconContent;
+                messageElement.appendChild(textContentDiv);
+                
+                chatbox.appendChild(messageElement);
+                
+                // Add copy buttons to new code blocks
+                textContentDiv.querySelectorAll('pre').forEach(pre => {
+                    const code = pre.querySelector('code');
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-code-btn';
+                    copyBtn.textContent = 'Copy code';
+                    copyBtn.addEventListener('click', () => {
+                        // Use a temporary textarea to copy text to clipboard
+                        const textarea = document.createElement('textarea');
+                        textarea.value = code.textContent;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        try {
+                            document.execCommand('copy');
+                            copyBtn.textContent = 'Copied!';
+                        } catch (err) {
+                            copyBtn.textContent = 'Error';
+                            console.error('Failed to copy text: ', err);
+                        }
+                        document.body.removeChild(textarea);
+                        setTimeout(() => { copyBtn.textContent = 'Copy code'; }, 2000);
+                    });
+                    pre.appendChild(copyBtn);
+                });
+
+                // Apply syntax highlighting
+                textContentDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+                chatbox.scrollTop = chatbox.scrollHeight;
+
+                return textContentDiv;
+            }
+
+
+            async function handleSendMessage() {
+                const prompt = messageInput.value.trim();
+                if (!prompt) return;
+
+                sendButton.disabled = true;
+                messageInput.value = '';
+                adjustTextareaHeight();
+                addMessageToUI(prompt, 'user');
+                
+                const ownerRegex = /who.*(made|created|develop|owner)|(owner|creator|developer)\??$/i;
+                if (ownerRegex.test(prompt)) {
+                    const ownerResponse = "I was created by Adarsh Dubey.";
+                    addMessageToUI(ownerResponse, 'bot');
+                    sendButton.disabled = false;
+                    messageInput.focus();
+                    return; 
+                }
+                
+                const loadingElement = addMessageToUI('Thinking<span class="blinking-cursor"></span>', 'bot');
+                const responseText = await callGeminiApi(prompt);
+                
+                // Update the loading message with the actual response, parsed as markdown
+                loadingElement.innerHTML = marked.parse(responseText);
+                
+                // Re-apply highlighting and copy buttons to the final response
+                loadingElement.querySelectorAll('pre').forEach(pre => {
+                    const code = pre.querySelector('code');
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-code-btn';
+                    copyBtn.textContent = 'Copy code';
+                    copyBtn.addEventListener('click', () => {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = code.textContent;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        try {
+                            document.execCommand('copy');
+                            copyBtn.textContent = 'Copied!';
+                        } catch (err) {
+                            copyBtn.textContent = 'Error';
+                        }
+                        document.body.removeChild(textarea);
+                        setTimeout(() => { copyBtn.textContent = 'Copy code'; }, 2000);
+                    });
+                    pre.appendChild(copyBtn);
+                });
+                loadingElement.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+            
+            function adjustTextareaHeight() {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = (messageInput.scrollHeight) + 'px';
+            }
+
+            // --- Event Listeners ---
+            messageForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSendMessage();
+            });
+
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                }
+            });
+            
+            messageInput.addEventListener('input', adjustTextareaHeight);
+
+            newChatBtn.addEventListener('click', () => {
+                chatHistory = [];
+                chatbox.innerHTML = '';
+                // Re-add the welcome message
+                const welcomeClone = welcomeMessage.cloneNode(true);
+                welcomeClone.style.display = 'flex';
+                chatbox.appendChild(welcomeClone);
+                
+                // Close sidebar on mobile after starting new chat
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+                messageInput.focus();
+            });
+
+            // --- Initial Load ---
+            adjustTextareaHeight();
+        });
+    </script>
+</body>
+</html>
